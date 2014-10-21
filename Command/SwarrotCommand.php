@@ -2,6 +2,7 @@
 
 namespace Swarrot\SwarrotBundle\Command;
 
+use Swarrot\SwarrotBundle\Decorator\DecoratorRegistry;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,7 +24,12 @@ class SwarrotCommand extends ContainerAwareCommand
     protected $name;
     protected $connectionName;
     protected $processor;
-    protected $processorStack;
+
+    /**
+     * @var DecoratorRegistry
+     */
+    protected $decoratorRegistry;
+
     protected $extras;
     protected $logger;
     protected $queue;
@@ -32,7 +38,7 @@ class SwarrotCommand extends ContainerAwareCommand
         $name,
         $connectionName,
         ProcessorInterface $processor,
-        array $processorStack,
+        DecoratorRegistry $decoratorRegistry,
         array $extras,
         LoggerInterface $logger = null,
         $queue = null
@@ -40,7 +46,7 @@ class SwarrotCommand extends ContainerAwareCommand
         $this->name           = $name;
         $this->connectionName = $connectionName;
         $this->processor      = $processor;
-        $this->processorStack = $processorStack;
+        $this->decoratorRegistry = $decoratorRegistry;
         $this->extras         = $extras;
         $this->logger         = $logger;
         $this->queue          = $queue;
@@ -57,6 +63,15 @@ class SwarrotCommand extends ContainerAwareCommand
             ->addArgument('connection', InputArgument::OPTIONAL, 'Connection to use', $this->connectionName)
             ->addOption('poll-interval', null, InputOption::VALUE_REQUIRED, 'Poll interval (in micro-seconds)', 500000)
         ;
+
+        foreach ($this->decoratorRegistry->getNames() as $name) {
+            $this->addOption(
+                sprintf('no-%s', $name),
+                null,
+                InputOption::VALUE_NONE,
+                sprintf('Disable the "%s" decorator.', $name)
+            );
+        }
 
         if (array_key_exists('ack', $this->processorStack)) {
             $this->addOption('requeue-on-error', 'r', InputOption::VALUE_NONE, 'Requeue in the same queue on error');
@@ -84,6 +99,18 @@ class SwarrotCommand extends ContainerAwareCommand
         $factory = $this->getContainer()->get('swarrot.factory.default');
         $messageProvider = $factory->getMessageProvider($queue, $connection);
 
+        $decoratorBlacklist = [];
+        foreach ($this->decoratorRegistry->getNames() as $name) {
+            $optionName = sprintf('no-%s', $name);
+            if ($input->getOption($optionName)) {
+                $decoratorBlacklist[] = $name;
+            }
+        }
+
+        $decoratorStack = $this->decoratorRegistry
+            ->createBuilder($decoratorBlacklist)
+            ->build($this->processor)
+        ;
         $stack = new Builder();
 
         if (array_key_exists('signal_handler', $this->processorStack)) {
@@ -108,16 +135,14 @@ class SwarrotCommand extends ContainerAwareCommand
                 $exchange = $this->extras['retry_exchange'];
             }
             $messagePublisher = $factory->getMessagePublisher($exchange, $connection);
-
+            http://www.rabbitmq.com/dlx.html
             $stack->push($this->processorStack['retry'], $messagePublisher, $this->logger);
         }
-
-        $processor = $stack->resolve($this->processor);
 
         $optionsResolver = new OptionsResolver();
         $optionsResolver->setOptional(array('queue', 'connection'));
 
-        $consumer = new Consumer($messageProvider, $processor, $optionsResolver);
+        $consumer = new Consumer($messageProvider, $decoratorStack, $optionsResolver);
 
         $consumer->consume($this->getOptions($input));
     }

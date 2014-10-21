@@ -7,6 +7,8 @@
         <parameter key="swarrot.factory.amqp_lib.class">Swarrot\SwarrotBundle\Broker\AmqpLibFactory</parameter>
         <parameter key="swarrot.command.base.class">Swarrot\SwarrotBundle\Command\SwarrotCommand</parameter>
         <parameter key="swarrot.publisher.class">Swarrot\SwarrotBundle\Broker\Publisher</parameter>
+        <parameter key="swarrot.decorator.stack_factory.class">Swarrot\Processor\Decorator\DecoratorStackFactory</parameter>
+        <parameter key="swarrot.decorator.registry.class">Swarrot\SwarrotBundle\Decorator\DecoratorRegistry</parameter>
     </parameters>
 
     <services>
@@ -30,6 +32,12 @@
             <argument type="service" id="swarrot.factory.default" />
             <argument type="service" id="event_dispatcher" />
             <argument>%swarrot.messages_types%</argument>
+        </service>
+
+        <service id="swarrot.decorator.stack_factory" class="%swarrot.decorator.stack_factory.class%">
+        </service>
+        <service id="swarrot.decorator.registry" class="%swarrot.decorator.registry.class%">
+            <argument type="service" id="swarrot.decorator.stack_factory"/>
         </service>
     </services>
 </container>

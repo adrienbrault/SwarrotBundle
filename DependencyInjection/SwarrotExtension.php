@@ -28,6 +28,7 @@ class SwarrotExtension extends Extension
 
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('swarrot.xml');
+        $loader->load('decorators.xml');
 
         $id = 'swarrot.factory.'.$config['provider'];
         if (!$container->has($id)) {

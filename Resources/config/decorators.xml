@@ -1,0 +1,66 @@
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="swarrot.decorator.ack.class">Swarrot\Processor\Decorator\Ack\AckDecorator</parameter>
+        <parameter key="swarrot.decorator.exception_catcher.class">Swarrot\Processor\Decorator\ExceptionCatcher\ExceptionCatcherDecorator</parameter>
+        <parameter key="swarrot.decorator.instant_retry.class">Swarrot\Processor\Decorator\InstantRetry\InstantRetryDecorator</parameter>
+        <parameter key="swarrot.decorator.max_execution_time.class">Swarrot\Processor\Decorator\MaxExecutionTime\MaxExecutionTimeDecorator</parameter>
+        <parameter key="swarrot.decorator.max_messages.class">Swarrot\Processor\Decorator\MaxMessages\MaxMessagesDecorator</parameter>
+        <parameter key="swarrot.decorator.retry.class">Swarrot\Processor\Decorator\Retry\RetryDecorator</parameter>
+        <parameter key="swarrot.decorator.signal_handler.class">Swarrot\Processor\Decorator\SignalHandler\SignalHandlerDecorator</parameter>
+    </parameters>
+
+    <services>
+        <service id="swarrot.decorator.instant_retry"
+                 class="%swarrot.decorator.instant_retry.class%">
+            <argument type="service" id="logger"/>
+
+            <tag name="swarrot.decorator" priority="150"/>
+        </service>
+
+        <service id="swarrot.decorator.retry"
+                 class="%swarrot.decorator.retry.class%">
+            <argument/> <!-- publisher - todo -->
+            <argument type="service" id="logger"/>
+
+            <tag name="swarrot.decorator" priority="150"/>
+        </service>
+
+        <service id="swarrot.decorator.ack"
+                 class="%swarrot.decorator.ack.class%">
+            <argument type="service" id="logger"/>
+
+            <tag name="swarrot.decorator" priority="100"/>
+        </service>
+
+        <service id="swarrot.decorator.exception_catcher"
+                 class="%swarrot.decorator.exception_catcher.class%">
+            <argument type="service" id="logger"/>
+
+            <tag name="swarrot.decorator" priority="50"/>
+        </service>
+
+        <service id="swarrot.decorator.max_execution_time"
+                 class="%swarrot.decorator.max_execution_time.class%">
+            <argument type="service" id="logger"/>
+
+            <tag name="swarrot.decorator"/>
+        </service>
+
+        <service id="swarrot.decorator.max_messages"
+                 class="%swarrot.decorator.max_messages.class%">
+            <argument type="service" id="logger"/>
+
+            <tag name="swarrot.decorator"/>
+        </service>
+
+        <service id="swarrot.decorator.signal_handler"
+                 class="%swarrot.decorator.signal_handler.class%">
+            <argument type="service" id="logger"/>
+
+            <tag name="swarrot.decorator" priority="-50"/>
+        </service>
+    </services>
+</container>

@@ -2,6 +2,8 @@
 
 namespace Swarrot\SwarrotBundle;
 
+use Swarrot\SwarrotBundle\DependencyInjection\CompilerPass\DecoratorCompilerPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\Console\Application;
 
@@ -15,5 +17,10 @@ class SwarrotBundle extends Bundle
         foreach ($commands as $command) {
             $application->add($container->get($command));
         }
+    }
+
+    public function build(ContainerBuilder $container)
+    {
+        $container->addCompilerPass(new DecoratorCompilerPass());
     }
 }

@@ -9,9 +9,15 @@
             "homepage": "http://odolbeau.fr/"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/adrienbrault/swarrot.git"
+        }
+    ],
     "require": {
-        "php": ">=5.3.3",
-        "swarrot/swarrot": "~1.2",
+        "php": ">=5.4",
+        "swarrot/swarrot": "dev-yolo as 2.0.x-dev",
         "psr/log": "~1.0",
         "symfony/framework-bundle": "~2.4",
         "symfony/console": "~2.4"
@@ -31,7 +37,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.2-dev"
+            "dev-master": "2.0-dev"
         }
     }
 }
